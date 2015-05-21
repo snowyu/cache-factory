@@ -1,5 +1,5 @@
 # Copyright (c) 2014-2015 Riceball LEE, MIT License
-path                  = require('path')
+path                  = require('path.js')
 customFactory         = require('custom-factory')
 injectMethods         = require('util-ex/lib/injectMethods')
 inherits              = require('inherits-ex/lib/inherits')
