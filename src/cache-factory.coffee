@@ -33,7 +33,13 @@ module.exports = (Factory, aOptions)->
   registeredObjects = Factory._objects
   aliases = Factory._aliases
 
-  Factory.getCacheName = getCacheName = (aName, aOptions, cls)->
+  ###
+  # result:
+  #  * false: no cache and create a new object instance always.
+  #  * 'string': the cache name.
+  #  * undefined: no cache and using the global object instance.
+  ###
+  Factory.getCacheName = getCacheName = (aOptions, aTypeClass)->
     cached = aOptions.cached if aOptions?
     cached = cached.name if isObject(cached) and cached.name?
 
@@ -47,30 +53,37 @@ module.exports = (Factory, aOptions)->
 
     if isString(cached) and cached.length
       if cached[0] isnt '/'
-        cls = Factory.registeredClass aName unless cls
-        cached = path.join(Factory.path(cls), cached)
+        #aTypeClass = Factory.registeredClass aName unless aTypeClass
+        cached = path.join(Factory.path(aTypeClass), cached)
     cached
 
+
+  Factory.getCacheItem = getCacheItem = (aClass, aOptions)->
+    cached = aOptions.cached if aOptions?
+    if cached?
+      popped = cached.popped
+      cachedName = getCacheName aOptions, aClass
+      if cachedName is false
+        # create a new instance always.
+        result = createObject aClass, undefined, aOptions
+      else if isString cachedName
+        result = instanceCache.get(cachedName)
+        if result is undefined
+          result = createObject aClass, undefined, aOptions
+          cached = undefined unless isObject cached
+          instanceCache.set cachedName, result, cached
+        else if popped
+          instanceCache.del(cachedName)
+    result
 
   getInstance = (aName, aOptions)->
     cached = aOptions.cached if aOptions?
     if cached?
       cls = Factory.registeredClass aName
       return unless cls
-      popped = cached.popped if cached.popped?
-      cachedName = getCacheName aName, aOptions, cls
-      if cachedName is false
-        # createObject(Class, arg1, arg2) = new Class(arg1, arg2)
-        result = createObject cls, undefined, aOptions
-      else if isString cachedName
-        result = instanceCache.get(cachedName)
-        if result is undefined
-          result = createObject cls, undefined, aOptions
-          cached = undefined unless isObject cached
-          instanceCache.set cachedName, result, cached
-        else if popped
-          instanceCache.del(cachedName)
-    result = Factory._get(aName, aOptions) unless result
+      result = getCacheItem cls, aOptions
+    else
+      result = Factory._get(aName, aOptions)
     return result
 
 
