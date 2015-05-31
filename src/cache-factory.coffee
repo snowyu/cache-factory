@@ -1,5 +1,5 @@
 # Copyright (c) 2014-2015 Riceball LEE, MIT License
-path                  = require('path.js')
+path                  = require('path.js/lib/path').path
 customFactory         = require('custom-factory')
 injectMethods         = require('util-ex/lib/injectMethods')
 inherits              = require('inherits-ex/lib/inherits')
@@ -33,47 +33,45 @@ module.exports = (Factory, aOptions)->
   registeredObjects = Factory._objects
   aliases = Factory._aliases
 
+  Factory.getCacheName = getCacheName = (aName, aOptions, cls)->
+    cached = aOptions.cached if aOptions?
+    cached = cached.name if isObject(cached) and cached.name?
+
+    if cached and not isString cached
+      # no cache name, so 'hash' it.
+      opts = extend {}, aOptions
+      delete opts.cached
+      delete opts.name
+      # encode as cache name.
+      cached = bytewise.encode(opts)
+
+    if isString(cached) and cached.length
+      if cached[0] isnt '/'
+        cls = Factory.registeredClass aName unless cls
+        cached = path.join(Factory.path(cls), cached)
+    cached
+
+
   getInstance = (aName, aOptions)->
     cached = aOptions.cached if aOptions?
     if cached?
-      cls = Factory[aName]
-      if cls is undefined
-        aName = Factory.getRealNameFromAlias aName
-        cls = Factory[aName] if aName
+      cls = Factory.registeredClass aName
       return unless cls
-      if cached is false
+      popped = cached.popped if cached.popped?
+      cachedName = getCacheName aName, aOptions, cls
+      if cachedName is false
         # createObject(Class, arg1, arg2) = new Class(arg1, arg2)
         result = createObject cls, undefined, aOptions
-      else
-        # the cache item name:
-        if isString cached
-          cachedName = cached
-          cached = undefined
-        else
-          popped = cached.popped
-          if cached.name?
-            cachedName = cached.name
-          else
-            opts = extend {}, aOptions
-            delete opts.cached
-            delete opts.name
-            #opts.path = Factory.path cls
-            #aOptions.name = aName unless aOptions.name?
-            cachedName = bytewise.encode(opts)
-        if isString(cachedName) and cachedName.length
-          if cachedName[0] isnt '/'
-            cachedName = path.join(Factory.path(cls), cachedName)
-          result = instanceCache.get(cachedName)
-          if result is undefined
-            result = createObject cls, undefined, aOptions
-            cached = undefined unless isObject cached
-            instanceCache.set cachedName, result, cached
-          else if popped
-            instanceCache.del(cachedName)
-        else
-          result = Factory._get(aName, aOptions)
-    else
-      result = Factory._get(aName, aOptions)
+      else if isString cachedName
+        result = instanceCache.get(cachedName)
+        if result is undefined
+          result = createObject cls, undefined, aOptions
+          cached = undefined unless isObject cached
+          instanceCache.set cachedName, result, cached
+        else if popped
+          instanceCache.del(cachedName)
+    result = Factory._get(aName, aOptions) unless result
     return result
+
 
   Factory.get = getInstance if getInstance isnt Factory.get
