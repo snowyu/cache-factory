@@ -43,40 +43,33 @@ add the cacheable items ability to CustomFactory.
 
 ### developer:
 
-```coffee
 
+Class usage:
+
+```coffee
 cachedFactory = require 'cache-factory'
 
 class Codec
   cachedFactory Codec
 
-
   constructor: (aName, aOptions)->return super
   initialize: (aOptions)->
     @bufferSize = aOptions.bufSize if aOptions
   encode:->
-
-register = Codec.register
-aliases  = Codec.aliases
-
-class TextCodec
-  register TextCodec
-  aliases TextCodec, 'utf8', 'utf-8'
-  constructor: Codec
-  encode:->
-
-class JsonCodec
-  register JsonCodec, TextCodec
-  constructor: -> return super
-  encode:->
+  ...
 ```
 
-Enable a flat factory:
+Ability usage:
 
 ```coffee
+factory   = require 'custom-factory'
+cacheable = require 'cache-factory'
 
 class Codec
-  factory Codec, flatOnly: true
+  factory Codec
+
+# add the cacheable ability to Codec factory.
+cacheable Codec
 
 ```
 
