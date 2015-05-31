@@ -6,7 +6,7 @@ should          = chai.should()
 expect          = chai.expect
 chai.use(sinonChai)
 
-path            = require('path.js')
+path            = require('path.js/lib/path').path
 extend          = require('inherits-ex/lib/_extend')
 createCtor      = require 'inherits-ex/lib/createCtor'
 factory         = require 'custom-factory'
