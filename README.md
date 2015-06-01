@@ -6,6 +6,8 @@ add the cacheable items ability to CustomFactory.
 * CacheFactory
   * `_cache` *(secondary-cache)*: the cache object to hold the instance.
   * `constructor(aName, aOptions)`: get a singleton instance or create a new instance item.
+    * aName: the item name. first search the aName in registeredObjects.
+      then search in the cache. the cached item name should be a full path or a related path.
   * `constructor(aOptions)`: get a singleton instance or create a new instance item.
     * aOptions *(object)*:
       * name: the factory item name. defaults to the constructor name
@@ -98,7 +100,18 @@ json2.should.not.be.equal json
 
 
 ## get the instance from cache:
-json3 = JsonCodec(bufSize:123, instance: "MyJson")
-json3 = JsonCodec(bufSize:123, instance: {name: "MyJson", cached: true})
+json3 = JsonCodec(bufSize:123, cached: "MyJson")
+json4 = JsonCodec(bufSize:123, cached: {name: "MyJson"})
+json3.should.be.equal json4
+
+json5 = JsonCodec(bufSize:123, cached: true)
+json5.should.be.equal json2
+
+
+json6 = Codec('/Codec/Json/MyJson')
+json6.should.be.equal json3
+
+json7 = JsonCodec 'MyJson'
+json7.should.be.equal json3
 
 ```
