@@ -43,13 +43,16 @@ module.exports = (Factory, aOptions)->
     cached = aOptions.cached if aOptions?
     cached = cached.name if isObject(cached) and cached.name?
 
-    if cached and not isString cached
-      # no cache name, so 'hash' it.
-      opts = extend {}, aOptions
-      delete opts.cached
-      delete opts.name
-      # encode as cache name.
-      cached = bytewise.encode(opts)
+    if cached
+      if isString cached
+        cached = Factory.formatName cached
+      else
+        # no cache name, so 'hash' it.
+        opts = extend {}, aOptions
+        delete opts.cached
+        delete opts.name
+        # encode as cache name.
+        cached = bytewise.encode(opts)
 
     if isString(cached) and cached.length
       if cached[0] isnt '/'
@@ -84,6 +87,21 @@ module.exports = (Factory, aOptions)->
       result = getCacheItem cls, aOptions
     else
       result = Factory._get(aName, aOptions)
+      unless result?
+        aName = aOptions.name unless aName
+        if aName and isString(aName) and aName[0] isnt '/'
+          # arguments.callee is forbidden if strict mode enabled.
+          # arguments.callee.caller = CustomFactory
+          try vCaller = arguments.callee.caller.caller
+          if vCaller and isInheritedFrom vCaller, Factory
+            cls = vCaller
+            vCaller = vCaller.caller
+            #get farest hierarchical registered class
+            while isInheritedFrom vCaller, cls
+              cls = vCaller
+              vCaller = vCaller.caller
+          aName = path.join(Factory.path(cls), Factory.formatName(aName))
+        result = instanceCache.get(aName)
     return result
 
 

@@ -30,7 +30,7 @@ class Codec
 
 
 getNamed = (cls, aName)->
-  result = path.join(Codec.path(cls), aName)
+  result = path.join(Codec.path(cls), Codec.formatName aName)
   #console.log result
   result
 
@@ -39,7 +39,7 @@ getUnNamed = (cls, aOptions)->
   delete opts.cached
   delete opts.name
   #opts.path = Codec.path cls
-  getNamed(cls, bytewise.encode(opts))
+  path.join(Codec.path(cls), bytewise.encode(opts))
 
 
 testCodecInstance = (obj, expectedClass, bufSize)->
@@ -180,7 +180,30 @@ describe 'Cache-able Factory', ->
     m = MyNewCodec(opts)
     testCodecInstance m, MyNewCodec, 12
     should.not.exist Codec._cache.get(name)
-    opts.bufSize = 12
+    opts.bufSize = 123
     m1 = MyNewCodec(opts)
-    testCodecInstance m1, MyNewCodec, 12
+    testCodecInstance m1, MyNewCodec, 123
     m1.should.not.be.equal m
+  it 'should get named cache instance directly via Codec(no set)', ->
+    opts  = bufSize: 123, cached: 'm'
+    uname = getUnNamed MyNewCodec, opts
+    name  = getNamed MyNewCodec, 'm'
+    m = MyNewCodec(opts) # set m to cache
+    testCodecInstance m, MyNewCodec, 123
+    Codec._cache.get(name).should.be.equal m
+    m1 = Codec('/codec/mynew/m')
+    testCodecInstance m1, MyNewCodec, 123
+    m1.should.be.equal m
+    Codec._cache.get(name).should.be.equal m1
+
+  it 'should get named cache instance directly via MyNewCodec(no set)', ->
+    opts  = bufSize: 123, cached: 'm'
+    uname = getUnNamed MyNewCodec, opts
+    name  = getNamed MyNewCodec, 'm'
+    m = MyNewCodec(opts) # set m to cache
+    testCodecInstance m, MyNewCodec, 123
+    Codec._cache.get(name).should.be.equal m
+    m1 = MyNewCodec('m')
+    testCodecInstance m1, MyNewCodec, 123
+    m1.should.be.equal m
+    Codec._cache.get(name).should.be.equal m1
