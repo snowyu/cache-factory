@@ -28,10 +28,10 @@ module.exports = (Factory, aOptions)->
   extend Factory,
     _cache: instanceCache = Cache(cacheSettings)
 
-  customFactory(Factory, aOptions) unless Factory._objects
+  customFactory(Factory, aOptions) unless Factory::_objects
 
-  registeredObjects = Factory._objects
-  aliases = Factory._aliases
+  registeredObjects = Factory::_objects
+  aliases = Factory::_aliases
 
   ###
   # result:
