@@ -73,8 +73,10 @@ module.exports = (Factory, aOptions)->
         result = instanceCache.get(cachedName)
         if result is undefined
           result = createObject aClass, undefined, aOptions
-          cached = undefined unless isObject cached
-          instanceCache.set cachedName, result, cached
+          unless popped
+            cached = undefined unless isObject cached
+            result.cached = cachedName
+            instanceCache.set cachedName, result, cached
         else if popped
           instanceCache.del(cachedName)
     result
