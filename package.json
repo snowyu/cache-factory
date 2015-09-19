@@ -1,6 +1,6 @@
 {
   "name": "cache-factory",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "add the cacheable ability to custom-factory.",
   "homepage": "https://github.com/snowyu/cache-factory.js",
   "main": "./index",
