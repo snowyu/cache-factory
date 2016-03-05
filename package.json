@@ -24,8 +24,8 @@
     "custom-factory": "~1.5.0",
     "inherits-ex": "~1.1.4",
     "path.js": "^1.0.7",
-    "secondary-cache": "~1.2.0",
-    "util-ex": "~0.2.9"
+    "secondary-cache": "~1.2.1",
+    "util-ex": "~0.3.15"
   },
   "devDependencies": {
     "chai": "~1.10.0",
